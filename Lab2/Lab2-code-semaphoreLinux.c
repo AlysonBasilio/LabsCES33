@@ -1,10 +1,11 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdio.h>
+#include <string.h>
 
 #define TRUE 1
 #define FALSE 0
-#define N 10
+#define N 2
 
 // Funcoes e variaveis do buffer
 int start;
@@ -36,14 +37,29 @@ const int producer = 0;
 const int consumer = 1;
 
 void up(sem_t *sem, const char * name) {
+	/*if(strcmp("full",name)==0 && end==start){
+		printf("TID %lu: Up %s ...\n",pthread_self(),name);
+		sem_wait(sem);	
+		printf("TID %lu: Up %s complete!\n",pthread_self(),name);
+	}*/
 	printf("TID %lu: Up %s ...\n",pthread_self(),name);
-	sem_wait(sem);	
+	sem_post(sem);	
 	printf("TID %lu: Up %s complete!\n",pthread_self(),name);
 }
 void down(sem_t *sem, const char * name) {
 	printf("TID %lu: Down %s ...\n",pthread_self(),name);
-	sem_post(sem);
+	sem_wait(sem);	
 	printf("TID %lu: Down %s complete!\n",pthread_self(),name);
+/*	if(strcmp("empty",name)==0 && end==start){
+		printf("TID %lu: Down %s ...\n",pthread_self(),name);
+		sem_wait(sem);	
+		printf("TID %lu: Down %s complete!\n",pthread_self(),name);
+	}
+	else if(strcmp("full",name)==0 && end==start){
+		printf("TID %lu: Down %s ...\n",pthread_self(),name);
+		sem_post(sem);	
+		printf("TID %lu: Down %s complete!\n",pthread_self(),name);
+	}*/
 }
 
 // Produtor e consumidor ...
@@ -66,9 +82,9 @@ void *producerFunc( void *lpParam ) {
 	while(TRUE) {
 		item=produce_item();
 		down(&empty,"empty");
-		down(&mutex,"mutex");
+		sem_wait(&mutex);
 		insert_item(item);
-		up(&mutex,"mutex");
+		sem_post(&mutex);
 		up(&full,"full");
 	}
 	printf(" TID %lu: Ending producer\n",pthread_self());
@@ -81,9 +97,9 @@ void *consumerFunc( void *lpParam ) {
 	int item;
 	while(TRUE) {
 		down(&full,"full");
-		down(&mutex,"mutex");
+		sem_wait(&mutex);
 		item = remove_item();
-		up(&mutex,"mutex");
+		sem_post(&mutex);
 		up(&empty,"empty");
 		consume_item(item);
 	}
@@ -97,7 +113,7 @@ int main() {
 	end = 0;
 	pthread_t pro,con;
 	sem_init(&full,0,0);
-	sem_init(&empty,0,N);
+	sem_init(&empty,0,N-1);
 	sem_init(&mutex,0,1);
 	pthread_create(&pro, 0, producerFunc, 0);
 	pthread_create(&con, 0, consumerFunc, 0);

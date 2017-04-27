@@ -1,4 +1,4 @@
-#include <windows.h>
+#include <pthread.h>
 #include <stdio.h>
 
 #define TRUE 1
@@ -99,13 +99,13 @@ int main() {
    int i;
 
    for(i=0;i<2;i++) {
-		handleThread[i] = CreateThread( 
+		handleThread[i] = pthread_create( 
             NULL,               // default security attributes
             0,                  // use default stack size  
             threadFunc[i],      // thread function pointer
-            &i,     			// argument to thread function 
+            &i,     		// argument to thread function 
             0,                  // use default creation flags 
-            &threadId[i]);   // returns the thread identifier 
+            &threadId[i]);   	// returns the thread identifier 
    }
    WaitForMultipleObjects(2, handleThread, TRUE, INFINITE);
 	

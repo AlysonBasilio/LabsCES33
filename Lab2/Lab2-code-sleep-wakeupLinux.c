@@ -3,7 +3,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define N 10
+#define N 20
 
 int line_counter;
 
@@ -36,12 +36,6 @@ pthread_mutex_t the_mutex;
 const int producer = 0;
 const int consumer = 1;
 
-void wakeup(pthread_cond_t condT, int x) {
-	printf("TID %lu: Waking up %lu ...\n",pthread_self(),threadId[x]);
-	pthread_cond_signal(&condT);
-	printf("TID %lu: Waking up signal sent to %lu!\n",pthread_self(),threadId[x]);
-}
-
 // Produtor e consumidor ...
 int produce_item() {
 	printf(" TID %lu: Producing item ...\n",pthread_self());
@@ -72,6 +66,8 @@ void *producerFunc( void *lpParam ) {
 		if(count == 1){
 			printf("TID %lu: Waking up %lu ...\n",pthread_self(),threadId[consumer]);
 			pthread_cond_signal(&condc);
+			int i;
+			for(i=0; i<150000;i++);
 			printf("TID %lu: Waking up signal sent to %lu!\n",pthread_self(),threadId[consumer]);
 		}
 	}
@@ -114,8 +110,8 @@ int main() {
 	pthread_cond_init(&condp,0);
 	pthread_create(&pro, 0, producerFunc, 0);
 	pthread_create(&con, 0, consumerFunc, 0);
-	pthread_join(con,0);
 	pthread_join(pro,0);
+	pthread_join(con,0);
 	pthread_cond_destroy(&condc);
 	pthread_cond_destroy(&condp);
 	pthread_mutex_destroy(&the_mutex);
