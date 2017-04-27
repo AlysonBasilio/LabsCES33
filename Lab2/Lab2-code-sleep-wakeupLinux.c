@@ -3,7 +3,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define N 10
+#define N 20
 
 int line_counter;
 
@@ -108,8 +108,8 @@ int main() {
 	pthread_cond_init(&condp,0);//acordam threads.
 	pthread_create(&pro, 0, producerFunc, 0);
 	pthread_create(&con, 0, consumerFunc, 0);
-	pthread_join(con,0);
 	pthread_join(pro,0);
+	pthread_join(con,0);
 	pthread_cond_destroy(&condc);
 	pthread_cond_destroy(&condp);
 	pthread_mutex_destroy(&the_mutex);
