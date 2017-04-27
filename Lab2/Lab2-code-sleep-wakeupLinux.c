@@ -51,23 +51,21 @@ void consume_item(int item) {
 }
 
 void *producerFunc( void *lpParam ) {
-	threadId[producer] = pthread_self();	
+	threadId[producer] = pthread_self();
 	printf(" TID %lu: Starting producer\n",pthread_self());
 	int item;
 	while(TRUE) {
 		item=produce_item();
 		if(count == N){
 			printf(" TID %lu: Sleeping ...\n",pthread_self());
-			pthread_cond_wait(&condp, &the_mutex);
+			pthread_cond_wait(&condp, &the_mutex); //Faz o produtor dormir esperando sinal do consumidor para acordar
 			printf(" TID %lu: Waked up!\n",pthread_self());
 		}
 		insert_item(item);
 		count = count + 1;
 		if(count == 1){
 			printf("TID %lu: Waking up %lu ...\n",pthread_self(),threadId[consumer]);
-			pthread_cond_signal(&condc);
-			int i;
-			for(i=0; i<150000;i++);
+			pthread_cond_signal(&condc);//Envia o sinal para o consumidor acordar
 			printf("TID %lu: Waking up signal sent to %lu!\n",pthread_self(),threadId[consumer]);
 		}
 	}
@@ -84,14 +82,14 @@ void *consumerFunc( void *lpParam ) {
 		if(count == 0) {
 		   	for(i=0; i<150000;i++);// Sleep(3000); //Descomentar:forca disputa
 			printf(" TID %lu: Sleeping ...\n",pthread_self());
-			pthread_cond_wait(&condc, &the_mutex);
+			pthread_cond_wait(&condc, &the_mutex);//Faz o consumidor dormir esperando o sinal do produtor para acordar
 			printf(" TID %lu: Waked up!\n",pthread_self());
 		}
 		item = remove_item();
 		count = count -1;
 		if(count == N-1){
 			printf("TID %lu: Waking up %lu ...\n",pthread_self(),threadId[producer]);
-			pthread_cond_signal(&condp);
+			pthread_cond_signal(&condp);//Envia sinal para o produtor acordar;
 			printf("TID %lu: Waking up signal sent to %lu!\n",pthread_self(),threadId[producer]);
 		}
 		consume_item(item);
@@ -105,9 +103,9 @@ int main() {
 	start = 0;
 	end = 0;
 	pthread_t pro,con;
-	pthread_mutex_init(&the_mutex,0);
-	pthread_cond_init(&condc,0);
-	pthread_cond_init(&condp,0);
+	pthread_mutex_init(&the_mutex,0);//É necessária para a utilização das funções de sleep e wakeup
+	pthread_cond_init(&condc,0);//Variáveis que servem como um sensor, ao receberem sinais,
+	pthread_cond_init(&condp,0);//acordam threads.
 	pthread_create(&pro, 0, producerFunc, 0);
 	pthread_create(&con, 0, consumerFunc, 0);
 	pthread_join(pro,0);
