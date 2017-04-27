@@ -31,13 +31,13 @@ int remove_item() {
 // Funcoes e variaveis das threads
 long unsigned int threadId[2];
 pthread_cond_t condc, condp;
-sem_t full, empty, mutex;
+sem_t full, empty, mutex; //Semáforos
 const int producer = 0;
 const int consumer = 1;
 
 void up(sem_t *sem, const char * name) {
 	printf("TID %lu: Up %s ...\n",pthread_self(),name);
-	sem_wait(sem);	
+	sem_wait(sem);
 	printf("TID %lu: Up %s complete!\n",pthread_self(),name);
 }
 void down(sem_t *sem, const char * name) {
@@ -60,7 +60,7 @@ void consume_item(int item) {
 }
 
 void *producerFunc( void *lpParam ) {
-	threadId[producer] = pthread_self();	
+	threadId[producer] = pthread_self();
 	printf(" TID %lu: Starting producer\n",pthread_self());
 	int item;
 	while(TRUE) {

@@ -8,7 +8,6 @@
 #define debug(FORMAT, ARGS...) printf("TID %d: " #FORMAT "\n",GetCurrentThreadId(),ARGS)
 int line_counter;
 
-
 // Funcoes e variaveis do buffer
 int start;
 int end;
@@ -36,6 +35,7 @@ HANDLE handleThread[2];
 DWORD threadId[2];
 const int producer = 0;
 const int consumer = 1;
+
 void sleep() {
 	debugtxt("Sleeping ...");
 	SuspendThread(GetCurrentThread());
@@ -65,10 +65,10 @@ DWORD WINAPI producerFunc( LPVOID lpParam ) {
 	int item;
 	while(TRUE) {
 		item=produce_item();
-		if(count == N) sleep();
+		if(count == N) sleep(); //Se buffer está cheio, produtor dorme
 		insert_item(item);
 		count = count + 1;
-		if(count == 1) wakeup(consumer);
+		if(count == 1) wakeup(consumer);//Se há algo para ser retirado do buffer, acorda consumidor
 	}
 	debugtxt("Ending producer");
 	return 0;
@@ -78,13 +78,13 @@ DWORD WINAPI consumerFunc( LPVOID lpParam ) {
 	debugtxt("Starting consumer");
 	int item;
 	while(TRUE) {
-		if(count == 0) {
+		if(count == 0) { //Se não há nada pra ser removido do buffer, consumidor dorme.
 		   // Sleep(3000); //Descomentar:forca disputa
 			sleep();
 		}
 		item = remove_item();
 		count = count -1;
-		if(count == N-1) wakeup(producer);
+		if(count == N-1) wakeup(producer); // Se há espaço no buffer, acorda o produtor.
 		consume_item(item);
 	}
 	debugtxt("Ending consumer");
@@ -99,17 +99,17 @@ int main() {
    int i;
 
    for(i=0;i<2;i++) {
-		handleThread[i] = CreateThread( 
+		handleThread[i] = CreateThread(
             NULL,               // default security attributes
-            0,                  // use default stack size  
+            0,                  // use default stack size
             threadFunc[i],      // thread function pointer
-            &i,     			// argument to thread function 
-            0,                  // use default creation flags 
-            &threadId[i]);   // returns the thread identifier 
+            &i,     			// argument to thread function
+            0,                  // use default creation flags
+            &threadId[i]);   // returns the thread identifier
    }
    WaitForMultipleObjects(2, handleThread, TRUE, INFINITE);
-	
+
    for(i=0;i<2;i++) {CloseHandle(handleThread[i]);
   }
-	
+
 }
