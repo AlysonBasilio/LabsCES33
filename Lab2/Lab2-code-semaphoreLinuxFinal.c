@@ -5,7 +5,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define N 2
+#define N 40
 
 // Funcoes e variaveis do buffer
 int start;
@@ -17,6 +17,8 @@ int last_consumed_item;
 
 void insert_item(int item) {
 	printf("TID %lu: Inserting item %d\n",pthread_self(),item);
+	int i;	
+	for(i=0;i<15000;i++);
 	buffer[end]=item;
 	end=(end+1)%N;
 	printf(" TID %lu: Item inserted!\n",pthread_self());
